@@ -1,0 +1,19 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Conjunto de regras conservador: erros reais (F = pyflakes, E = pycodestyle)
+# sem entrar em opiniões de estilo que exigiriam reformatar o projeto inteiro.
+select = ["E", "F", "W"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+# Checagem permissiva de propósito: o projeto não foi escrito com type hints
+# completos em 100% das funções. Ativar modo estrito agora reprovaria CI em
+# massa por causa disso, não por bugs reais. Achados de bug real do mypy
+# ainda aparecem e quebram o pipeline; o que fica de fora é só a exigência
+# de anotação exaustiva.
+disallow_untyped_defs = false
+check_untyped_defs = true

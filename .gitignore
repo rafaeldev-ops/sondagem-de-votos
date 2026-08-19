@@ -1,0 +1,31 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.db
+
+# Dumps e backups do banco. NUNCA versionar: as tabelas de sondagem guardam
+# CPF, telefone e em quem cada associado votou, e o que entra no histórico
+# do git não sai mais — nem apagando o arquivo num commit seguinte.
+# O `pg_dump -t webhook_logs` recomendado antes da migration 008 cai
+# exatamente aqui.
+*.sql
+*.dump
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+uploads/*
+!uploads/.gitkeep
+*.log
+.DS_Store
+Thumbs.db
+
+# Workspace do subagent-driven-development (ledger, briefs, relatorios,
+# pacotes de review) — scratch local, o registro definitivo e o git log.
+.superpowers/
+
+# Worktrees isolados de desenvolvimento (superpowers)
+.worktrees/

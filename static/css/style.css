@@ -1,0 +1,727 @@
+/* =========================================================================
+   Tema do fluxo público da sondagem.
+
+   Camada por cima do Bootstrap 5.3 (carregado antes deste arquivo no
+   template): só redefine o que precisa de identidade própria e deixa grid,
+   utilitários, validação (.is-invalid / .valid-feedback) e o toast
+   intocados — é o que mantém o app.js funcionando sem reescrita.
+
+   REGRA DA CSP: nada aqui pode depender de atributo de estilo embutido no
+   HTML nem de element.style no JS. style-src é 'self' + jsDelivr, sem
+   'unsafe-inline' (ver app/middlewares/security_headers.py). Todo estado
+   visual do fluxo é troca de CLASSE.
+
+   Os ícones são SVG inline no template, não fonte de ícones: nenhum host
+   novo na CSP e nada para baixar antes da primeira pintura.
+   ========================================================================= */
+
+:root {
+    --primary: #c8102e;
+    --primary-deep: #8a0a20;
+    --primary-dark: #a00c26;
+    --primary-soft: #fdf2f4;
+
+    --success: #0ca678;
+
+    --ink: #16181d;
+    --ink-soft: #495057;
+    --ink-muted: #868e96;
+    --ink-faint: #adb5bd;
+
+    --surface: #ffffff;
+    --surface-sunken: #f8f9fa;
+    --bg: #f1f3f5;
+    --line: #e9ecef;
+    --line-strong: #dee2e6;
+
+    --radius-shell: 28px;
+    --radius-card: 14px;
+    --radius-field: 14px;
+}
+
+body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.page {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--surface);
+}
+
+/* ============================== Cabeçalho ============================== */
+
+.brand-header {
+    background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 55%, var(--primary-deep) 100%);
+    color: #fff;
+    text-align: center;
+    padding: 30px 20px 46px;
+}
+
+/* "Sondagem 2026" é sobrancelha, não título: pequena, com muito tracking e
+   peso leve. É o contraste com o wordmark logo abaixo — pesado e apertado —
+   que dá o ar de marca. Invertidos, os dois competem e nenhum manda. */
+.brand-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+/* Fundo branco atrás da logo: o vermelho dela (quase o mesmo tom do
+   cabeçalho) some sem esse contraste — ver preview antes de mexer aqui. */
+.brand-logo {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    padding: 5px;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    object-fit: contain;
+    /* Compensa o tracking da linha: sem isso o ícone parece colado no S. */
+    margin-right: 2px;
+}
+
+.brand-wordmark {
+    margin: 0;
+    font-size: 1.78rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    color: #fff;
+}
+
+/* ================================ Cartão ================================ */
+
+/* O cartão sobe por cima do vermelho. A margem negativa é igual ao respiro
+   extra que .brand-header carrega embaixo (46px de padding contra 30 em
+   cima), então o encaixe não depende de número mágico solto. */
+.flow-shell {
+    position: relative;
+    margin-top: -28px;
+    background: var(--surface);
+    border-radius: var(--radius-shell) var(--radius-shell) 0 0;
+    padding: 26px 20px 40px;
+    min-height: 60vh;
+}
+
+/* ========================= Bolinhas das 5 etapas ========================= */
+
+.step-dots {
+    list-style: none;
+    margin: 0 0 26px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step-dot {
+    display: flex;
+    align-items: center;
+    /* flex:1 nos conectores (abaixo) precisa de espaço para distribuir; sem
+       min-width:0 aqui o item não encolhe e as cinco bolinhas estouram a
+       largura em tela de 320px. */
+    min-width: 0;
+}
+
+/* Conector à ESQUERDA de cada bolinha (menos a primeira). Acende quando a
+   etapa anterior já foi concluída, então a linha preenche junto com o
+   avanço sem elemento próprio no HTML. flex:1 faz os quatro dividirem o que
+   sobra, então o conjunto se ajusta de 320px a 480px sem media query. */
+.step-dot::before {
+    content: "";
+    flex: 1;
+    min-width: 10px;
+    max-width: 34px;
+    height: 2px;
+    margin: 0 6px;
+    background: var(--line-strong);
+    transition: background-color 0.35s ease;
+}
+
+.step-dot:first-child::before {
+    display: none;
+}
+
+.step-dot.is-done::before,
+.step-dot.is-current::before {
+    background: var(--primary);
+}
+
+.step-dot-face {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--line);
+    color: var(--ink-faint);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: background-color 0.25s ease, color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+/* Etapa atual: é a que está esperando ser confirmada. Preenchida, com o
+   número visível e um halo que a separa das demais. Vira check só quando a
+   etapa é concluída. */
+.step-dot.is-current .step-dot-face {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 0 5px rgba(200, 16, 46, 0.16);
+}
+
+.step-dot.is-done .step-dot-face {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* Check desenhado com borda em vez do caractere "✓": o glifo varia muito
+   entre as fontes de sistema do Android e do iOS (tamanho, peso e linha de
+   base), e aqui ele precisa cair centralizado dentro de 44px. */
+.step-dot-face::after {
+    content: "";
+    display: none;
+    width: 7px;
+    height: 13px;
+    border: solid currentColor;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.step-dot.is-done .step-dot-face::after {
+    display: block;
+}
+
+.step-dot.is-done .step-dot-num {
+    display: none;
+}
+
+/* ============================== Tipografia ============================== */
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 1.36rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+    color: var(--ink);
+}
+
+.section-subtitle {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    line-height: 1.45;
+    margin: 0 0 22px;
+}
+
+.field-hint {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin: 0 0 8px;
+}
+
+/* ============================== Formulários ============================== */
+
+.field {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.form-control,
+.form-select {
+    border-radius: var(--radius-field);
+    border: 1.5px solid var(--line-strong);
+    color: var(--ink);
+    background-color: var(--surface);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control-lg,
+.form-select-lg {
+    font-size: 1rem;
+    padding: 15px 16px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(200, 16, 46, 0.12);
+}
+
+.form-control::placeholder {
+    color: var(--ink-faint);
+}
+
+.form-check-input {
+    border: 1.5px solid var(--line-strong);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(200, 16, 46, 0.15);
+}
+
+/* Declarações de uma linha (titular do grupo, aceite LGPD): alvo de toque do
+   tamanho de um campo, não checkbox de 16px solto. O <label> é quem cresce,
+   então a área clicável nativa cobre a linha inteira — mesmo raciocínio já
+   usado em .departamento-item. */
+.choice-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 16px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* .selected vem do app.js; :has() é só o reforço para quem já tem suporte.
+   Sozinho o :has() deixaria o destaque de fora nas WebViews de Android
+   antigas, que ainda aparecem bastante no público do clube. */
+.choice-card.selected,
+.choice-card:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.choice-card .form-check-input {
+    margin: 1px 0 0;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+
+.choice-card .form-check-label {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.choice-title {
+    display: block;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.choice-hint {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    line-height: 1.4;
+    margin-top: 3px;
+}
+
+/* ============================ Aviso de privacidade ============================ */
+
+.privacy-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    background: var(--surface-sunken);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+}
+
+.privacy-notice p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+}
+
+.privacy-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+}
+
+/* ================================ Botões ================================ */
+
+.btn-primary {
+    background: var(--primary);
+    border: 0;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    padding: 17px 18px;
+    transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: var(--primary-dark);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+    background: var(--line-strong);
+    color: var(--ink-faint);
+    opacity: 1;
+}
+
+.btn-link {
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-link:hover {
+    color: var(--primary);
+}
+
+.btn-link:disabled {
+    color: var(--ink-faint);
+}
+
+/* ================================= OTP ================================= */
+
+.otp-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.otp-digit {
+    width: 100%;
+    max-width: 52px;
+    height: 60px;
+    padding: 0;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border-radius: 12px;
+}
+
+/* ============================ Contador de seleção ============================ */
+
+.counter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface-sunken);
+    border-radius: 12px;
+    padding: 15px 16px;
+    margin-bottom: 14px;
+}
+
+.counter-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+}
+
+.counter-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+}
+
+.counter-value {
+    font-size: 1rem;
+    color: var(--ink-muted);
+}
+
+.counter-value strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* ============================== Candidatos ============================== */
+
+.candidato-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    padding: 12px;
+    border-radius: var(--radius-card);
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.candidato-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+/* Avatar de iniciais em vez do quadro cinza escrito "FOTO": a lista quase
+   nunca tem foto cadastrada, e uma coluna inteira de placeholder idêntico
+   não ajuda ninguém a achar um nome.
+
+   A cor é CLASSE (.c0 … .c5), escolhida pelo app.js a partir do id do
+   candidato — nunca um atributo de estilo montado no innerHTML. A CSP
+   bloqueia atributo de estilo venha ele do servidor ou do JS, então uma
+   paleta em classes é o único caminho que funciona sem afrouxar style-src. */
+.candidato-avatar,
+.candidato-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.candidato-avatar {
+    object-fit: cover;
+    background: var(--line);
+}
+
+.candidato-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink-muted);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* Seis matizes bem separados no círculo cromático, todos escuros o bastante
+   para texto branco por cima passar em AA. Quantidade fixa e pequena de
+   propósito: com muitas cores parecidas, a cor deixa de ajudar a distinguir
+   um nome do outro, que é a única função dela aqui. */
+.candidato-avatar-placeholder.c0 { background: #e8377a; }
+.candidato-avatar-placeholder.c1 { background: #3b5bdb; }
+.candidato-avatar-placeholder.c2 { background: #0ca678; }
+.candidato-avatar-placeholder.c3 { background: #e8590c; }
+.candidato-avatar-placeholder.c4 { background: #7950f2; }
+.candidato-avatar-placeholder.c5 { background: #1098ad; }
+
+.candidato-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.candidato-nome {
+    font-size: 0.83rem;
+    color: var(--ink-muted);
+    line-height: 1.35;
+}
+
+.candidato-apelido {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+/* Círculo, não quadrado: na referência a seleção do candidato é um alvo
+   redondo à direita da linha. Continua sendo um <input type=checkbox> de
+   verdade — só o desenho muda, então teclado e leitor de tela seguem
+   funcionando. */
+.candidato-card .form-check-input {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    flex-shrink: 0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* ============================== Ponto focal ============================== */
+
+/* A etapa reaproveita .candidato-card inteiro — mesmo cartão, mesmo avatar,
+   mesmo checkbox redondo da etapa 3. A escolha única não é diferença de
+   desenho: é o app.js que desmarca os outros a cada mudança. */
+
+.focal-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+}
+
+
+/* ============================== Modalidades ============================== */
+
+/* 49 itens numa tela de celular precisam de rolagem própria, senão a página
+   inteira vira uma rolagem de vários metros. */
+.departamentos-lista {
+    max-height: 340px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-card);
+    overscroll-behavior: contain;
+}
+
+.departamento-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 0 0 14px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+/* O padding vertical/direito mora no <label>, não na linha: o único alvo de
+   clique real é o checkbox e o <label for> associado a ele, e o label já é
+   flex-grow-1 (ocupa a largura toda). Colocando o padding aqui, a área
+   clicável nativa do label passa a cobrir as faixas verticais e o lado
+   direito da linha também — sem isso a linha parecia clicável na largura
+   toda, mas só o texto do nome (sem as bandas de respiro) respondia ao
+   toque. */
+.departamento-item > label {
+    padding: 13px 14px 13px 0;
+    font-size: 0.95rem;
+    font-weight: 400;
+    cursor: pointer;
+    margin: 0;
+}
+
+.departamento-item:last-child {
+    border-bottom: 0;
+}
+
+.departamento-item.selected {
+    background: var(--primary-soft);
+}
+
+.departamento-item.selected > label {
+    font-weight: 600;
+    color: var(--primary-deep);
+}
+
+/* ============================== Agradecimento ============================== */
+
+.thanks {
+    text-align: center;
+    padding: 30px 0;
+}
+
+/* .section-title é flex (por causa do ícone da etapa de ponto focal), e
+   caixa flex não obedece text-align — o `center` herdado de .thanks vale
+   para o texto dentro de cada item, não para a posição dos itens na linha.
+   Sem isto o título do agradecimento encostava à esquerda enquanto ícone e
+   subtítulo ficavam centralizados. */
+.thanks .section-title {
+    justify-content: center;
+}
+
+.thanks-icon {
+    width: 84px;
+    height: 84px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 10px rgba(12, 166, 120, 0.12);
+}
+
+.thanks-icon svg {
+    width: 40px;
+    height: 40px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ============================== Responsivo ============================== */
+
+@media (max-width: 360px) {
+    .brand-wordmark {
+        font-size: 1.55rem;
+    }
+
+    .step-dot-face {
+        width: 38px;
+        height: 38px;
+        font-size: 0.88rem;
+    }
+
+    .otp-digit {
+        height: 54px;
+        font-size: 1.3rem;
+    }
+}
+
+/* Em tela larga o cartão deixa de ser uma folha colada no topo e vira um
+   cartão de verdade, com respiro e sombra em volta. */
+@media (min-width: 520px) {
+    body {
+        padding: 24px 16px;
+    }
+
+    .page {
+        min-height: 0;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px -30px rgba(16, 24, 40, 0.5);
+    }
+
+    .flow-shell {
+        min-height: 0;
+    }
+}
+
+/* Animações aqui são decorativas (halo da bolinha atual, elevação do
+   botão). Quem pediu menos movimento no sistema não perde informação
+   nenhuma sem elas — o estado continua legível por cor e pelo check. */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

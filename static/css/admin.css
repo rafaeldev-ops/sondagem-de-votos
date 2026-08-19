@@ -1,0 +1,33 @@
+body {
+    background: #f8f9fa;
+}
+
+/* Era um style="max-width: 400px" no template. Virou classe para permitir
+   remover 'unsafe-inline' de style-src na CSP — ver
+   app/middlewares/security_headers.py. */
+.login-card {
+    max-width: 400px;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.candidato-admin-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.candidato-admin-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.candidato-admin-item .badge-inativo {
+    background: #dc3545;
+}

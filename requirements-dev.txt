@@ -1,0 +1,11 @@
+# Dependências de desenvolvimento e CI — nunca instaladas na imagem de produção.
+# Uso: pip install -r requirements-dev.txt (já inclui requirements.txt)
+-r requirements.txt
+
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+ruff==0.8.4
+mypy==1.13.0
+pip-audit==2.7.3
+locust==2.32.4

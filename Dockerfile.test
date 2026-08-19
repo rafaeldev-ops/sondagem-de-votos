@@ -1,0 +1,37 @@
+# Imagem para rodar a suíte de testes. Não é usada em produção.
+#
+# Existe porque o Dockerfile de produção instala só requirements.txt — sem
+# pytest, ruff e cia — e porque a suíte precisa do Python 3.12 do projeto,
+# que não está necessariamente instalado na máquina de quem desenvolve.
+#
+# Uso (com Postgres e Redis de pé via `docker compose up -d db redis`):
+#
+#     docker build -f Dockerfile.test -t sondagem-test:latest .
+#     docker run --rm --network sondagem-eleitoral_default \
+#       -v "$PWD:/app" -w /app \
+#       -e DATABASE_URL="postgresql+asyncpg://sondagemtest:sondagemtest@db:5432/sondagem_test" \
+#       -e DATABASE_URL_SYNC="postgresql+psycopg2://sondagemtest:sondagemtest@db:5432/sondagem_test" \
+#       -e REDIS_URL="redis://:testpass123@redis:6379/1" \
+#       sondagem-test:latest pytest -q
+#
+# O código é montado em /app em vez de copiado, para que editar no host
+# reflita no container sem reconstruir a imagem.
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# gcc e libpq-dev são necessários para compilar psycopg2 caso não haja wheel.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt requirements-dev.txt ./
+RUN pip install --upgrade pip && pip install -r requirements-dev.txt
+
+CMD ["pytest", "-q"]

@@ -1,0 +1,64 @@
+services:
+  app:
+    build: .
+    ports:
+      # Publicado só em loopback, como "db" e "redis" abaixo: em produção o
+      # Nginx faz proxy_pass para 127.0.0.1:8000 e termina o TLS. Publicar em
+      # 0.0.0.0 aqui exporia o uvicorn direto na internet, sem reverse proxy
+      # e sem HTTPS, numa VPS com a porta aberta.
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      # Sem valor fixo: se POSTGRES_PASSWORD não estiver no .env, o compose
+      # falha ao subir em vez de usar silenciosamente uma senha fraca
+      # conhecida ("postgres/postgres" era o valor hardcoded anterior).
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-sondagem_clube}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Publicado só em loopback — acessível do host para debug local
+      # (psql, DBeaver etc), mas não de fora da máquina. O container "app"
+      # continua enxergando "db:5432" normalmente pela rede interna do
+      # compose, então isso não é necessário para o app funcionar.
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:?defina REDIS_PASSWORD no .env}
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

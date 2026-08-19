@@ -1,0 +1,70 @@
+# Stack de DEMONSTRACAO com dados ficticios (ver docs/DEMO.md).
+#
+# Sobe lado a lado com o stack de desenvolvimento normal, sem encostar nele:
+#   - "name" abaixo isola containers, rede e volumes num projeto proprio;
+#   - as portas do host sao outras (8080/5433/6380), porque o compose padrao
+#     ja ocupa 8000/5432/6379;
+#   - le .env.demo, e nao .env, para nunca carregar credencial de producao.
+#
+# Uso:  docker compose -f docker-compose.demo.yml up -d --build
+name: sondagem-demo
+
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8000"
+    env_file:
+      - .env.demo
+    volumes:
+      # Volume nomeado, e nao ./uploads: foto enviada pelo admin da demo nao
+      # se mistura com os arquivos do stack de desenvolvimento.
+      - uploads_demo:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    # Valores fixos, ao contrario do docker-compose.yml, que exige que venham
+    # do .env: aqui nao ha segredo nenhum a proteger, e um comando so ja sobe
+    # a demo inteira.
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: sondagem_demo
+    volumes:
+      - postgres_data_demo:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass demo
+    ports:
+      - "127.0.0.1:6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "demo", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data_demo:
+  uploads_demo:
