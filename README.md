@@ -4,18 +4,6 @@ Aplicação web mobile-first para sondagem de intenção de votos entre os
 associados de um clube esportivo, com validação de CPF, autenticação por
 OTP via SMS e painel administrativo.
 
-Construída sob contrato para o **Sempre Tricolor** (São Paulo) e em
-produção em `sempretricolor.org`. Este repositório é a versão de
-portfólio: o código é o mesmo, e acompanha um ambiente de demonstração
-com dados 100% fictícios que sobe com dois comandos.
-
-<p align="center">
-  <img src="docs/screenshots-preview/1-cadastro.png" width="200" alt="Tela de cadastro">
-  <img src="docs/screenshots-preview/2-otp.png" width="200" alt="Confirmação de OTP">
-  <img src="docs/screenshots-preview/3-candidatos.png" width="200" alt="Seleção de candidatos">
-  <img src="docs/screenshots-preview/5-obrigado.png" width="200" alt="Confirmação de envio">
-</p>
-
 ## Ver rodando em 2 minutos
 
 Requer Docker. Nenhuma credencial externa é necessária — o ambiente de
